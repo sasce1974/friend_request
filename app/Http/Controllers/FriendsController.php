@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Friends;
 
 class FriendsController extends Controller
 {
@@ -58,13 +59,33 @@ class FriendsController extends Controller
     public function createFriendRequest ($id){
         $my_id = Auth::id();
 
-        //Check if $my_id already exists with this $id (user)...
-        $requested = DB::select("SELECT id FROM friends WHERE user_one = ? AND user_two = ?", [$my_id, $id]);
-        If(count($requested) > 0){
-            return response()->json(["message"=>"Friend request already sent for this user!"], 304);
+        //Check if the friend request is not sent to the self
+        if($my_id === $id) return response()->json(["message"=>"Request can not be sent to the self!"], 400);
+
+        //Check if the user exists
+        $user = User::find($id);
+        if(is_null($user)){
+            return response()->json(["message"=>"User not found!"], 404);
+        }
+
+        //Check if there is already have sent a request to this user
+        $requested = Friends::where([['user_one','=', $my_id], ['user_two', '=', $id]])->first('id');
+
+        //If there is no friend request sent to this user, send it (save in table friends) and return message
+        If(!is_null($requested)){
+            return response()->json(["message"=>"Friend request already sent for this user!"],400);
         }else{
-            $sql = DB::insert("INSERT INTO friends (user_one, user_two, accepted, rejected) VALUES (?, ?, 0, 0)",[$my_id, $id]);
-            if($sql){
+
+            $friend_request = new Friends();
+
+            $friend_request->user_one = $my_id;
+            $friend_request->user_two = $id;
+            $friend_request->accepted = 0;
+            $friend_request->rejected = 0;
+
+            $result = $friend_request->save();
+
+            if($result){
                 return response()->json(["message"=>"Friend request sent!"], 200);
             }else{
                 return response()->json(["message"=>"Record not inserted!"], 500);
@@ -74,10 +95,108 @@ class FriendsController extends Controller
     }
 
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @getFriendRequests() return all the friend requests towards the
+     * authenticated user along with the users ID, emails and names,
+     * or 404 if no friend requests.
+     */
+    public function getFriendRequests(){
+        $my_id = Auth::id();
+
+        $sql = "SELECT f.*, u.id AS 'User ID', u.name, u.email FROM users u, friends f WHERE 
+                f.user_two = ? AND f.user_two = u.id AND f.accepted = 0 AND f.rejected = 0";
+        $friend_requests = DB::select($sql, [$my_id]);
+
+        if(empty($friend_requests)){
+            return response()->json(["message"=>"Record not found!"], 404);
+        }
+        return response()->json($friend_requests, 200);
+    }
+
+
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     * @acceptFriendRequest() creates an object from the friend request by the provided
+     * param $id, checks if the friend request exists and if it is related to the
+     * authenticated user, then updates the 'accepted' column from the 'friends' table
+     * and returns status 200.
+     * If authenticated user is not the the same as in column 'user_two', status 403 is returned.
+     */
     public function acceptFriendRequest($id){
-        $sql = "UPDATE "
+        $my_id = Auth::id();
+        $friend_request = Friends::find($id);
+        if(is_null($friend_request))return response()->json(["message"=>"Record not found!"], 404);
+
+        if($friend_request->user_two === $my_id){
+            $friend_request->accepted = 1;
+            $result = $friend_request->save();
+            if($result){
+                return response()->json(["message"=>"Friend request accepted!"], 200);
+            }else{
+                return response()->json(["message"=>"Record not changed!"], 500);
+            }
+        }else{
+            return response()->json(["message"=>"Forbidden!"], 403);
+        }
+
+    }
 
 
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     * @rejectFriendRequest() creates an object from the friend request by the provided
+     * param $id, checks if the friend request exists and if it is related to the
+     * authenticated user, then updates the 'rejected' column from the 'friends' table
+     * and returns status 200.
+     * If authenticated user is not the the same as in column 'user_two', status 403 is returned.
+     */
+    public function rejectFriendRequest($id){
+        $my_id = Auth::id();
+        $friend_request = Friends::find($id);
+        if(is_null($friend_request))return response()->json(["message"=>"Record not found!"], 404);
+
+        if($friend_request->user_two === $my_id){
+            $friend_request->rejected = 1;
+            $result = $friend_request->save();
+            if($result){
+                return response()->json(["message"=>"Friend request rejected!"], 200);
+            }else{
+                return response()->json(["message"=>"Record not changed!"], 500);
+            }
+        }else{
+            return response()->json(["message"=>"Forbidden!"], 403);
+        }
+    }
+
+
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     * @cancelFriendRequest() creates an object from the friend request by the provided
+     * param $id, checks if the friend request exists and if it is created by the
+     * authenticated user, then deletes that record from the 'friends' table
+     * and returns status 200.
+     * If authenticated user is not the the same as in column 'user_one', status 403 is returned.
+     */
+    public function cancelFriendRequest($id){
+        $my_id = Auth::id();
+        $friend_request = Friends::find($id);
+        if(is_null($friend_request))return response()->json(["message"=>"Record not found!"], 404);
+
+        if($friend_request->user_one === $my_id){
+            $result = $friend_request->delete();
+            if($result){
+                return response()->json(["message"=>"Friend request canceled!"], 200);
+            }else{
+                return response()->json(["message"=>"Record not changed!"], 500);
+            }
+        }else{
+            return response()->json(["message"=>"Forbidden!"], 403);
+        }
     }
 
 }

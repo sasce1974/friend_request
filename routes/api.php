@@ -26,3 +26,11 @@ Route::delete('/user/{id}', 'UserController@delete');
 
 Route::get('/friend/{id}', 'FriendsController@friends');
 Route::post('/friend/{id}', 'FriendsController@createFriendRequest');
+Route::get('/friend', 'FriendsController@getFriendRequests');
+Route::put('/friend/accept/{id}', 'FriendsController@acceptFriendRequest');
+Route::put('/friend/reject/{id}', 'FriendsController@rejectFriendRequest');
+Route::delete('/friend/{id}', 'FriendsController@cancelFriendRequest');
+
+Route::fallback(function () {
+    return response()->json(["message"=>"Not found!"], 404);
+});

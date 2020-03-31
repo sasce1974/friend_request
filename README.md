@@ -17,8 +17,35 @@ This API has the following main functionality:
     <li>reject friend request and</li>
     <li>cancel friend request.</li>
 </ul>
-<p>As a security option there is a Basic Authentication middleware that allows actions only to registered users.</p>
+
 <p>Aditionally to above functionalities, the built in laravel functions as database migration allow easely to initialize the project.</p>
+
+
+<h3>Important!</h3>
+<p>As a security option there is a Basic Authentication middleware that allows actions only to registered users.</p>
+This can be removed by unregistering the AuthBasic.php Middleware from the \App\Http\Kernel.php with removing the line:
+
+    \App\Http\Middleware\AuthBasic::class,
+
+from the application's route middleware groups, api.
+
+    protected $middlewareGroups = [
+        'web' => [
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            // \Illuminate\Session\Middleware\AuthenticateSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+    
+        'api' => [
+            'throttle:60,1',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\AuthBasic::class,
+        ],
+
 
 <h2>1. INSTALATION</h2>
 

@@ -36,4 +36,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    /**
+     * mokeup function @isAuthorized can be used for dealing
+     * with sensitive data. Can be utilized when, for ex. using
+     * user roles/levels... for now it is set to return only true
+     * for the functions that will be require it in the future development.
+     *
+     * @return bool
+     */
+    public static function isAuthorized(){
+        // if $this->role = 'admin', return true...
+        return true;
+    }
+
 }

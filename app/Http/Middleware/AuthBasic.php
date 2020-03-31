@@ -9,9 +9,12 @@ class AuthBasic
     /**
      * Handle an incoming request.
      *
+     * Please comment the Auth::onceBasic closure to avoid this middleware
+     *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed
+     *
      */
     public function handle($request, Closure $next)
     {

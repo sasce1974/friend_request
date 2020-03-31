@@ -1,79 +1,263 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+<h1>REST API "FRIEND REQUEST"</h1>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+<h2>INTRODUCTION</h2>
 
-## About Laravel
+This API has the following main functionality:
+<ul>
+    <li>register and log in users using Laravel built in laravel/ui Composer package;</li>
+    <li>show all users;</li>
+    <li>show one user;</li>
+    <li>create user;</li>
+    <li>update user;</li>
+    <li>delete user;</li>
+    <li>show all user friends;</li>
+    <li>create friend request;</li>
+    <li>receive friend request;</li>
+    <li>accept friend request;</li>
+    <li>reject friend request and</li>
+    <li>cancel friend request.</li>
+</ul>
+<p>As a security option there is a Basic Authentication middleware that allows actions only to registered users.</p>
+<p>Aditionally to above functionalities, the built in laravel functions as database migration allow easely to initialize the project.</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<h2>1. INSTALATION</h2>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Before starting with this project, the following dependecies are REQUIRED:
+<ul>
+    <li>composer</li>
+    <li>node.js</li>
+    <li>local server</li>
+    <li>PHP v.7.3</li>
+    <li>MySQL </li>
+</ul>
+This project can be downloaded from the Github repository. If you are usin Git on your CLI, the pull request CAN be done with the following line:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+	git clone https://github.com/sasce1974/friend_request.git
 
-## Learning Laravel
+After the project is downloaded locally, additional program dependencies for the Laravel project MUST be installed. Please run into your CLI:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+	composer install
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+After that:
 
-## Laravel Sponsors
+	npm install
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Create a copy from the .env.example file from the root folder of the project and name it .env
+Can be done it in the CLI with the command:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
-- [云软科技](http://www.yunruan.ltd/)
+	cp .env.example .env
 
-## Contributing
+The .env file (environment file) contains all the basic configurations for the program to run. 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Generate an App Encryption Key:
 
-## Code of Conduct
+	php artisan key:generate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+This will create an app key string into the APP_KEY setting of the .env
 
-## Security Vulnerabilities
+Create empty database for the application.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Add the details for the database connection to the .env file <i>(Host, database name, username and password)</i>
 
-## License
+Migrate the database with the following code in your CLI:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+	php artisan migrate
+
+This WILL generate the tables in the created database: <b>users</b> and <b>friends</b>, along with the tables needed for the Authentication.
+
+Note: In the older versions of MySQL, migration can throw the following Error:
+<i>ERROR SQL STATE [42000]: Syntax error or access violation: 1701 Specified key was too long; max key length is 767 bytes</i>
+
+In such case, you can refer to the following post: https://laravel-news.com/laravel-5-4-key-too-long-error
+
+Please set up your virtual host to the 'C:\{PathTo}\{MyProject}\Public' directory of the project as a base.
+
+With this, the API is ready to be used on the local machine.
+
+<h2>2. MODELS</h2>
+
+Aside from the program framework, this project contains two main models: User and Friends with each represented with one table in the database.
+
+<h3>2.1. Model User</h3>
+
+The User Model is a default Laravel prebuilt model with a tabele defined with the columns:
+
+- id (autoincrement/primary)
+- name (string)
+- email (string)
+- password (string)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+
+<h3>2.2. Model Friends</h3>
+
+The only modification in this Model is inserted columns names into the '$fillable property' as a requirements for the Laravel Eloquent to manipulate the data in those columns of the friends table. 
+This model use the friends table which is only ment to produce a MANY TO MANY relationship within every user.
+
+The core "friendship" logic in this application runs trough this table. It contains the following columns:
+
+- id (autoincrement/primary)
+- user_one (integer)
+- user_two (integer)
+- accepted (boolean)
+- rejected (boolean)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+
+<h4>Friend Request Logic:</h4>
+
+The column <i>'user_one'</i> takes the id of the user that makes a friend request.
+
+The column <i>'user_two'</i> takes the id of the user that is requested.
+
+Column <i>'accepted'</i> by default is 0, and when user accept the request, it become 1.
+
+Same is for the column <i>'rejected'</i>.
+
+If the user wants to cancel his friend request, simply deletes the friend request record. That only the user that created the request can do.
+
+More in details about each action will be explained bellow with the Route - Controller interaction.
+
+
+<h2>3. ROUTES (ENDPOINTS) AND CONTROLLERS</h2>
+
+The API routes are defined in the routes directory: {PROJECT}\routes\api.php
+
+The main API url is: http://{yourhostname}/api/ following with the name of the model (user or friend)
+
+In the api.php you can find two grops of defined routes, one group for each Controller:
+
+<h3>3.1. UserController</h3>
+
+UserController via the routes bellow have the following functionality:
+- index - return all the users
+- show - return one user data
+- create user
+- update user
+- delete user
+
+Routes that employs the above functions are:
+
+    Route::get('/user', 'UserController@index');
+    Route::get('/user/{id}', 'UserController@show');
+    Route::post('/user', 'UserController@create');
+    Route::put('/user/{id}', 'UserController@update');
+    Route::delete('/user/{id}', 'UserController@delete');
+
+
+<u>GET 'http://{yourhostname}/api/user'</u> 
+
+returns a json format of data of all the users.
+
+
+<u>GET 'http://{yourhostname}/api/user/{id}' </u>
+
+returns a json format of data of the user with id as in the parameter.
+
+
+<u>POST 'http://{yourhostname}/api/user' </u>
+
+sends a post with a new user data and creates new record in the user table. The data first is validated with the following roules:
+
+- name: required, max 100 char.
+- email: required, must be email and unique,
+- password: is required, between 8 and 20 char.
+
+If the validation fails, this function returns appropriate error in a json format.
+
+The password is encrypted with the bcrypt() function.
+
+The <i>'create'</i> method on success returns the instance of the new created user in json format.
+
+
+<u>PUT 'http://{yourhostname}/api/user/{id}'</u> 
+
+updates the user with the ID as the param from the route. 
+
+Similar to the previous method, data is validated for the fields that are passed in the request with the same rules.
+If the validation fails, this function returns appropriate error in a json format.
+
+The password is encrypted with the bcrypt() function.
+
+The <i>'update'</i> method on success returns the instance of the updated user in a json format.
+
+
+<u>DELETE 'http://{yourhostname}/api/user/{id}' </u>
+
+deletes the user with ID as the param from the route. On success returns the 204 status code.
+
+NOTE: 
+Above functions returns error codes 40X appropriately, or 20X on success.
+
+Also, the "sensitive" functions like (create, update, delete) contain a mockup method 'isAuthorized' from the User model. This function can be employed as a security add to protect the data change from unauthorized persons, but after the eventual improving the application with more functionality (e.g. User levels, user roles...) and setting that to this function. For now it is set to return only <b>true</b>.
+
+ 
+<h3>3.2. FriendsController</h3>
+
+FriendsController via the routes bellow have the following functionality:
+- friends - return all the user friends
+- create friend request
+- get friend request
+- accept friend request
+- reject friend request
+- cancel friend request
+
+Routes that employs the above functions are:
+
+    Route::get('/friend/{id}', 'FriendsController@friends');
+    Route::post('/friend/{id}', 'FriendsController@createFriendRequest');
+    Route::get('/friend', 'FriendsController@getFriendRequests');
+    Route::put('/friend/accept/{id}', 'FriendsController@acceptFriendRequest');
+    Route::put('/friend/reject/{id}', 'FriendsController@rejectFriendRequest');
+    Route::delete('/friend/{id}', 'FriendsController@cancelFriendRequest');
+
+
+<u>GET 'http://{yourhostname}/api/friend/{id}' </u>
+
+returns a json format of:
+- friend request id - that connects the users
+- user ID, name and email
+
+on the users that are friends with the user with the passed parameter {id}.
+Column <i>'user_one'</i> from the <i>'friends'</i> table have a records the user id that is sending the friend requests.
+Column <i>'user_two'</i> from the <i>'friends'</i> table have a records from the user id to whom the friend requests is sent.
+
+
+
+<u>POST 'http://{yourhostname}/api/friend/{id}' </u>
+
+This route use param {id} to send friend request to an user with id:{id} by storing it in the <i>'user_two'</i> column of the table <i>'friends</i>' 
+The ID of the authenticated user is used in the first query to check if there is no existing friend request to the same user, and after, to save it in the first column <i>(user_one)</i>
+
+
+<u>GET 'http://{yourhostname}/api/friend' </u>
+
+returns all friend requests towards the authenticated user - All the columns from the affected records from the friends table and the users ID (that is equal to <i>user_one</i>), emails and names from the users table.
+
+
+
+<u>PUT 'http://{yourhostname}/api/friend/accept/{id}' </u>
+
+This route creates an object from the friend request by the provided param {id} (id of the friend request record), checks if the friend request exists and if it is related to the authenticated user, then updates the <i>'accepted'</i> column from the <i>'friends'</i> table and returns status 200.
+If authenticated user is not the the same as in column 'user_two', status 403 is returned.
+
+
+
+<u>PUT 'http://{yourhostname}/api/friend/reject/{id}' </u>
+
+This route creates an object from the friend request by the provided param {id} (id of the friend request record), checks if the friend request exists and if it is related to the authenticated user, then updates the <i>'rejected'</i> column from the <i>'friends'</i> table and returns status 200.
+If authenticated user is not the the same as in column <i>'user_two'</i>, status 403 is returned.
+
+
+
+<u>DELETE 'http://{yourhostname}/api/friend/{id}' </u>
+
+This route creates an object from the friend request by the provided param $id (id of the friend request record), checks if the friend request exists and if it is created by the authenticated user, then deletes that record from the <i>'friends'</i> table and returns status 200.
+If authenticated user is not the the same as in column 'user_one', status 403 is returned.
+
+
+NOTE: 
+Above functions returns error codes 40X and 500 appropriately or 200 on success.
+

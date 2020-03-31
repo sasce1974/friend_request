@@ -15,9 +15,10 @@ class FriendsController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * This function returns the users that are friends
      * with the user with the parameter $id.
-     * Column 'user_one' from the 'friends' table records the user id that sends friend requests.
-     * Column 'user_two' from the 'friends' table records the user id to whom the friend requests
-     * is sent.
+     * Column 'user_one' from the 'friends' table records
+     * the user id that sends friend requests.
+     * Column 'user_two' from the 'friends' table records
+     * the user id to whom the friend requests is sent.
      */
     public function friends ($id){
         $my_id = Auth::id();
@@ -25,16 +26,20 @@ class FriendsController extends Controller
         /** Two quarries gets the users data from the first column, then from the second
         * one of the friends table that are associated with the user ID (parameter @$id) */
 
-        $sql1 = "SELECT f.id AS 'Request ID', u.id AS 'User ID', u.name, u.email FROM users u ,friends f WHERE u.id = f.user_two AND f.user_one = ? AND f.accepted = 1 AND NOT u.id = ?";
-        $sql2 = "SELECT f.id AS 'Request ID', u.id AS 'User ID', u.name, u.email FROM users u ,friends f WHERE u.id = f.user_one AND f.user_two = ? AND f.accepted = 1 AND NOT u.id = ?";
 
-        $friends1 = DB::select($sql1, [$id, $my_id]);
-        $friends2 = DB::select($sql2, [$id, $my_id]);
+        $sql1 = "SELECT f.id AS 'Request ID', u.id AS 'User ID', u.name, u.email FROM users u,
+        friends f WHERE u.id = f.user_two AND f.user_one = ? AND f.accepted = 1 AND f.rejected = 0";
+        $sql2 = "SELECT f.id AS 'Request ID', u.id AS 'User ID', u.name, u.email FROM users u,
+        friends f WHERE u.id = f.user_one AND f.user_two = ? AND f.accepted = 1 AND f.rejected = 0";
+
+        $friends1 = DB::select($sql1, [$id]);
+        $friends2 = DB::select($sql2, [$id]);
 
         if(empty($friends1) && empty($friends2)){
             return response()->json(["message"=>"Records not found!"], 404);
         }
 
+        //Both objects are added into the $friends array
         $friends = array();
         foreach ($friends1 as $friend){
             $friends[] = $friend;
@@ -42,8 +47,12 @@ class FriendsController extends Controller
         foreach ($friends2 as $friend){
             $friends[] = $friend;
         }
-
-        return response()->json($friends, 200);
+        $result = response()->json($friends, 200);
+        if($result){
+            return $result;
+        }else{
+            return response()->json(["message"=>"Internal Server Error!"], 500);
+        }
     }
 
 
@@ -51,7 +60,7 @@ class FriendsController extends Controller
     /**
      * @param $id
      * @return \Illuminate\Http\JsonResponse
-     * function createFriendRequest use param $id to send friend request to an user with id:$id
+     * method createFriendRequest use param $id to send friend request to an user with id:$id
      * $my_id is the id of the authenticated user - it is used in the first query to check if there
      * is no existing friend request to the same user, and in the second query to save it in the
      * first column (user_one)
@@ -60,7 +69,7 @@ class FriendsController extends Controller
         $my_id = Auth::id();
 
         //Check if the friend request is not sent to the self
-        if($my_id === $id) return response()->json(["message"=>"Request can not be sent to the self!"], 400);
+        if($my_id == $id) return response()->json(["message"=>"Request can not be sent to the self!"], 400);
 
         //Check if the user exists
         $user = User::find($id);
@@ -68,12 +77,17 @@ class FriendsController extends Controller
             return response()->json(["message"=>"User not found!"], 404);
         }
 
-        //Check if there is already have sent a request to this user
+        //Check if there is already a request to this user from us
         $requested = Friends::where([['user_one','=', $my_id], ['user_two', '=', $id]])->first('id');
 
-        //If there is no friend request sent to this user, send it (save in table friends) and return message
-        If(!is_null($requested)){
-            return response()->json(["message"=>"Friend request already sent for this user!"],400);
+        //check if the other user have not been sent request already to us
+        $requested1 = Friends::where([['user_one','=', $id], ['user_two', '=', $my_id]])->first('id');
+
+        //If there is no already same friend request, send it (save in table friends) and return message
+        If(!is_null($requested)) {
+            return response()->json(["message" => "Friend request already sent for this user!"], 400);
+        }elseif (!is_null($requested1)){
+            return response()->json(["message" => "Friend request already sent by this user!"], 400);
         }else{
 
             $friend_request = new Friends();
@@ -88,7 +102,7 @@ class FriendsController extends Controller
             if($result){
                 return response()->json(["message"=>"Friend request sent!"], 200);
             }else{
-                return response()->json(["message"=>"Record not inserted!"], 500);
+                return response()->json(["message"=>"Internal Server Error!"], 500);
             }
 
         }
@@ -106,11 +120,11 @@ class FriendsController extends Controller
         $my_id = Auth::id();
 
         $sql = "SELECT f.*, u.id AS 'User ID', u.name, u.email FROM users u, friends f WHERE 
-                f.user_two = ? AND f.user_two = u.id AND f.accepted = 0 AND f.rejected = 0";
+                f.user_two = ? AND f.user_one = u.id AND f.accepted = 0 AND f.rejected = 0";
         $friend_requests = DB::select($sql, [$my_id]);
 
         if(empty($friend_requests)){
-            return response()->json(["message"=>"Record not found!"], 404);
+            return response()->json(["message"=>"There are no friend requests."], 404);
         }
         return response()->json($friend_requests, 200);
     }
@@ -136,7 +150,7 @@ class FriendsController extends Controller
             if($result){
                 return response()->json(["message"=>"Friend request accepted!"], 200);
             }else{
-                return response()->json(["message"=>"Record not changed!"], 500);
+                return response()->json(["message"=>"Internal Server Error!"], 500);
             }
         }else{
             return response()->json(["message"=>"Forbidden!"], 403);
@@ -165,7 +179,7 @@ class FriendsController extends Controller
             if($result){
                 return response()->json(["message"=>"Friend request rejected!"], 200);
             }else{
-                return response()->json(["message"=>"Record not changed!"], 500);
+                return response()->json(["message"=>"Internal Server Error!"], 500);
             }
         }else{
             return response()->json(["message"=>"Forbidden!"], 403);
@@ -192,7 +206,7 @@ class FriendsController extends Controller
             if($result){
                 return response()->json(["message"=>"Friend request canceled!"], 200);
             }else{
-                return response()->json(["message"=>"Record not changed!"], 500);
+                return response()->json(["message"=>"Internal Server Error!"], 500);
             }
         }else{
             return response()->json(["message"=>"Forbidden!"], 403);

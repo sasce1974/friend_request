@@ -32,8 +32,16 @@ class UserController extends Controller
     }
 
 
-
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function create(Request $request){
+
+        if(!User::isAuthorized()){
+            return response()->json(["message"=>"Not Authorized!"], 401);
+        }
+
 
         $rules = [
             'name'=>'required|max:100',
@@ -55,7 +63,17 @@ class UserController extends Controller
     }
 
 
+    /**
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, $id){
+
+        if(!User::isAuthorized()){
+            return response()->json(["message"=>"Not Authorized!"], 401);
+        }
+
         $user = User::find($id);
 
         if(is_null($user)){
@@ -83,6 +101,11 @@ class UserController extends Controller
 
 
     public function delete(Request $request, $id){
+
+        if(!User::isAuthorized()){
+            return response()->json(["message"=>"Not Authorized!"], 401);
+        }
+
         $user = User::find($id);
         if(is_null($user)){
             return response()->json(["message"=>"Record not found!"], 404);
